@@ -2,17 +2,17 @@ use super::HrefStringResolver;
 use crate::utils::ImageKindTypes;
 
 #[derive(Debug, Default)]
-pub struct ReqwestResolver {
+pub struct BlockingReqwestResolver {
     client: reqwest::blocking::Client,
 }
 
-impl From<reqwest::blocking::Client> for ReqwestResolver {
+impl From<reqwest::blocking::Client> for BlockingReqwestResolver {
     fn from(client: reqwest::blocking::Client) -> Self {
         Self { client }
     }
 }
 
-impl HrefStringResolver<'_> for ReqwestResolver {
+impl HrefStringResolver<'_> for BlockingReqwestResolver {
     fn is_target(&self, href: &str) -> bool {
         href.starts_with("https://") || href.starts_with("http://")
     }
@@ -35,14 +35,24 @@ mod tests {
 
     #[test]
     fn reqwest_resolver() {
-        let resolver = ReqwestResolver::default();
+        let resolver = BlockingReqwestResolver::default();
         let mut options = Options::default();
         options.image_href_resolver.resolve_string = resolver.into_fn();
 
+        let mut s = mockito::Server::new();
+        s.mock("GET", "/gray.png")
+            .with_status(200)
+            .with_header("content-type", "image/png")
+            .with_body(include_bytes!("../test_data/gray.png"))
+            .create();
+
         let tree = usvg::Tree::from_str(
-            r#"<svg xmlns="http://www.w3.org/2000/svg">
-                <image href="./test_data/gray.png" />
+            &format!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg">
+                <image href="{}/gray.png" />
             </svg>"#,
+                s.url()
+            ),
             &options,
         )
         .unwrap();

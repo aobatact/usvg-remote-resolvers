@@ -8,7 +8,9 @@ reqwest = { version = "0.12.9", default-features = false, optional = true, featu
 usvg = "0.44.0"
 
 [dev-dependencies]
+mockito = "1.6.1"
 resvg = "0.44.0"
+tokio = "1.41.1"
 
 [features]
 default = ["reqwest"]
