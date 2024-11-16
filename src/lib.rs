@@ -1,7 +1,7 @@
 use usvg::{ImageHrefStringResolverFn, ImageKind, Options};
 
-#[cfg(feature = "reqwest")]
-mod reqwest;
+#[cfg(feature = "reqwest_blocking")]
+pub mod reqwest_blocking;
 mod utils;
 
 pub trait HrefStringResolver<'a>: Send + Sync {

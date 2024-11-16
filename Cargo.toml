@@ -13,5 +13,6 @@ resvg = "0.44.0"
 tokio = "1.41.1"
 
 [features]
-default = ["reqwest"]
+default = ["reqwest_blocking"]
 reqwest = ["dep:reqwest"]
+reqwest_blocking = ["dep:reqwest", "reqwest/blocking"]
