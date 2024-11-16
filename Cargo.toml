@@ -1,0 +1,15 @@
+[package]
+name = "usvg-remote-resolvers"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12.9", default-features = false, optional = true, features = ["blocking"] }
+usvg = "0.44.0"
+
+[dev-dependencies]
+resvg = "0.44.0"
+
+[features]
+default = ["reqwest"]
+reqwest = ["dep:reqwest"]
