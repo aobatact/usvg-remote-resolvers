@@ -1,5 +1,7 @@
 use usvg::{ImageHrefStringResolverFn, ImageKind, Options};
 
+#[cfg(feature = "reqwest")]
+pub mod reqwest;
 #[cfg(feature = "reqwest_blocking")]
 pub mod reqwest_blocking;
 mod utils;

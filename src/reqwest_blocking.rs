@@ -1,7 +1,12 @@
 use super::HrefStringResolver;
 use crate::utils::ImageKindTypes;
 
-#[derive(Debug, Default)]
+/// Blocking Reqwest resolver.
+///
+/// This resolver uses `reqwest::blocking::Client` to fetch images.
+/// Cannot be used inside async context.
+/// If you want to use it inside async context, use [`ReqwestResolver`](`crate::reqwest::ReqwestResolver`) instead.
+#[derive(Debug, Default, Clone)]
 pub struct BlockingReqwestResolver {
     client: reqwest::blocking::Client,
 }

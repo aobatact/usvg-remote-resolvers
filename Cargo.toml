@@ -5,14 +5,15 @@ edition = "2021"
 
 [dependencies]
 reqwest = { version = "0.12.9", default-features = false, optional = true, features = ["blocking"] }
+tokio = { version = "1.41.1", default-features = false, optional = true, features = ["rt", "rt-multi-thread"] }
 usvg = "0.44.0"
 
 [dev-dependencies]
 mockito = "1.6.1"
 resvg = "0.44.0"
-tokio = "1.41.1"
+tokio = {version = "1.41.1", features = ["macros"] }
 
 [features]
 default = ["reqwest_blocking"]
-reqwest = ["dep:reqwest"]
+reqwest = ["dep:reqwest", "dep:tokio"]
 reqwest_blocking = ["dep:reqwest", "reqwest/blocking"]
