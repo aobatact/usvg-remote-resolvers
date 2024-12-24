@@ -7,8 +7,12 @@ pub mod reqwest_blocking;
 mod utils;
 
 pub trait HrefStringResolver<'a>: Send + Sync {
+    /// Check if the `href` is the target of this resolver.
+    /// If it return false, it will resolve to `None`.
     fn is_target(&self, href: &str) -> bool;
+    /// This is where the logic for resolving the `href` is implemented.
     fn get_image_kind(&self, href: &str, options: &Options) -> Option<ImageKind>;
+    /// Convert this resolver to put into [`ImageHrefResolver`](`usvg::ImageHrefResolver`).
     fn into_fn(self) -> ImageHrefStringResolverFn<'a>
     where
         Self: Sized + 'a,
@@ -21,8 +25,18 @@ pub trait HrefStringResolver<'a>: Send + Sync {
             }
         })
     }
+    /// Add a fallback to this resolver in case if the url is not the target of this resolver, or if
+    /// it fails to resolve.
+    fn with_fallback<T>(self, fallback: T) -> FallbackResolver<Self, T>
+    where
+        Self: Sized,
+        T: HrefStringResolver<'a>,
+    {
+        FallbackResolver::new(self, fallback)
+    }
 }
 
+/// Resolver using [`default_string_resolver`](`usvg::ImageHrefResolver::default_string_resolver`)
 #[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultResolver;
 
