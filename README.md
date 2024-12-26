@@ -27,7 +27,7 @@ options.image_href_resolver.resolve_string = resolver.into_fn();
 
 let tree = usvg::Tree::from_str(
     r#"<svg xmlns="http://www.w3.org/2000/svg">
-        <image href="https://example.com/gray.png" />
+        <image href="https://example.com/sample.png" />
     </svg>"#,
     &options,
 )
