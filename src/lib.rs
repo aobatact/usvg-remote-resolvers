@@ -4,7 +4,7 @@
 //!
 //! ```rust
 //! use usvg::Options;
-//! use usvg_href_resolver::{HrefStringResolver, reqwest_blocking::BlockingReqwestResolver};
+//! use usvg_remote_resolvers::{HrefStringResolver, reqwest_blocking::BlockingReqwestResolver};
 //!
 //! let resolver = BlockingReqwestResolver::default();
 //! let mut options = Options::default();
@@ -63,7 +63,7 @@ pub trait HrefStringResolver<'a>: Send + Sync {
     ///
     /// ```
     /// use usvg::Options;
-    /// use usvg_href_resolver::{HrefStringResolver, reqwest_blocking::BlockingReqwestResolver};
+    /// use usvg_remote_resolvers::{HrefStringResolver, reqwest_blocking::BlockingReqwestResolver};
     ///
     /// let resolver = BlockingReqwestResolver::default();
     /// let mut options = Options::default();
