@@ -1,3 +1,35 @@
+//! Provides a way to resolve the `href` attribute of the `<image>` tag in the SVG for [`usvg`](`usvg`).
+//!
+//! # Example
+//!
+//! ```rust
+//! use usvg::Options;
+//! use usvg_href_resolver::{HrefStringResolver, reqwest_blocking::BlockingReqwestResolver};
+//!
+//! let resolver = BlockingReqwestResolver::default();
+//! let mut options = Options::default();
+//! resolver.set_into_options(&mut options);
+//!
+//! let tree = usvg::Tree::from_str(
+//!     r#"<svg xmlns="http://www.w3.org/2000/svg">
+//!         <image href="https://example.com/sample.png" />
+//!     </svg>"#,
+//!     &options,
+//! ).unwrap();
+//!
+//! let mut pixmap = resvg::tiny_skia::Pixmap::new(200, 200).unwrap();
+//! resvg::render(
+//!     &tree,
+//!     resvg::tiny_skia::Transform::identity(),
+//!     &mut pixmap.as_mut(),
+//! );
+//! ```
+//!
+//! # Feature Flags
+//!
+//! - `reqwest`: Enable the `reqwest` resolver.
+//! - `reqwest_blocking`: Enable the `reqwest_blocking` resolver.
+//!
 use usvg::{ImageHrefStringResolverFn, ImageKind, Options};
 
 #[cfg(feature = "reqwest")]
