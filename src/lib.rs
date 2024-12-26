@@ -6,6 +6,8 @@ pub mod reqwest;
 pub mod reqwest_blocking;
 mod utils;
 
+/// HrefStringResolver is a trait that is used to resolve the `href` attribute of the `<image>` tag.
+/// It will be converted to [`ImageHrefResolver`](`usvg::ImageHrefResolver`) to be set in the [`Options`](`usvg::Options`).
 pub trait HrefStringResolver<'a>: Send + Sync {
     /// Check if the `href` is the target of this resolver.
     /// If it return false, it will resolve to `None`.
@@ -24,6 +26,22 @@ pub trait HrefStringResolver<'a>: Send + Sync {
                 None
             }
         })
+    }
+    /// Set this resolver into the [`Options`](`usvg::Options`).
+    ///
+    /// ```
+    /// use usvg::Options;
+    /// use usvg_href_resolver::{HrefStringResolver, reqwest_blocking::BlockingReqwestResolver};
+    ///
+    /// let resolver = BlockingReqwestResolver::default();
+    /// let mut options = Options::default();
+    /// resolver.set_into_options(&mut options);
+    /// ```
+    fn set_into_options(self, options: &mut Options<'a>)
+    where
+        Self: Sized + 'a,
+    {
+        options.image_href_resolver.resolve_string = self.into_fn();
     }
     /// Add a fallback to this resolver in case if the url is not the target of this resolver, or if
     /// it fails to resolve.
@@ -107,7 +125,7 @@ mod tests {
     fn default_resolver() {
         let resolver = DefaultResolver::default();
         let mut options = Options::default();
-        options.image_href_resolver.resolve_string = resolver.into_fn();
+        resolver.set_into_options(&mut options);
 
         let tree = usvg::Tree::from_str(
             r#"<svg xmlns="http://www.w3.org/2000/svg">
