@@ -11,6 +11,18 @@ pub struct BlockingReqwestResolver {
     client: reqwest::blocking::Client,
 }
 
+impl BlockingReqwestResolver {
+    /// Create a new `BlockingReqwestResolver` with the given [`Client`](`reqwest::blocking::Client`).
+    pub fn new(client: reqwest::blocking::Client) -> Self {
+        Self { client }
+    }
+
+    /// Get the underlying [`Client`](`reqwest::blocking::Client`) of this resolver.
+    pub fn client(&self) -> &reqwest::blocking::Client {
+        &self.client
+    }
+}
+
 impl From<reqwest::blocking::Client> for BlockingReqwestResolver {
     fn from(client: reqwest::blocking::Client) -> Self {
         Self { client }
