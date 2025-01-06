@@ -1,5 +1,10 @@
 # usvg-remote-resolvers
 
+
+[![Doc](https://docs.rs/usvg-remote-resolvers/badge.svg)](https://docs.rs/usvg-remote-resolvers) 
+[![Crate](https://img.shields.io/crates/v/usvg-remote-resolvers.svg)](https://crates.io/crates/usvg-remote-resolvers)
+
+
 `usvg-remote-resolvers` is a Rust library that provides remote resource resolvers for the `usvg` library. It allows you to fetch and resolve external resources such as images and fonts referenced in SVG files.
 
 ## Features
