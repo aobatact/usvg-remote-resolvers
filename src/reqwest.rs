@@ -11,8 +11,14 @@ pub struct ReqwestResolver {
 }
 
 impl ReqwestResolver {
+    /// Create a new `ReqwestResolver` with the given [`Client`](`reqwest::Client`).
     pub fn new(client: reqwest::Client) -> Self {
         Self { client }
+    }
+
+    /// Get the underlying [`Client`](`reqwest::Client`) of this resolver.
+    pub fn client(&self) -> &reqwest::Client {
+        &self.client
     }
 }
 
