@@ -10,9 +10,11 @@ license = "MIT"
 keywords = ["svg"]
 
 [dependencies]
-reqwest = { version = "0.12.9", default-features = false, optional = true }
-tokio = { version = "1.41.1", default-features = false, optional = true, features = ["rt", "rt-multi-thread"] }
+reqwest = { version = "0.12.12", default-features = false, optional = true }
+tokio = { version = "1.43.0", default-features = false, optional = true, features = ["rt", "rt-multi-thread"] }
 usvg = "0.44.0"
+reqwest-middleware = { version = "0.4.0", optional = true }
+http-cache-reqwest = {version = "0.15.0", optional = true, default-features = false }
 
 [dev-dependencies]
 mockito = "1.6.1"
@@ -23,3 +25,6 @@ tokio = {version = "1.41.1", features = ["macros"] }
 default = ["reqwest_blocking"]
 reqwest = ["dep:reqwest", "dep:tokio"]
 reqwest_blocking = ["dep:reqwest", "reqwest/blocking"]
+reqwest_middleware = ["dep:reqwest-middleware"]
+reqwest_moka_cache = ["reqwest_middleware", "http-cache-reqwest/manager-moka"]
+reqwest_cacache = ["reqwest_middleware", "http-cache-reqwest/manager-cacache"]
