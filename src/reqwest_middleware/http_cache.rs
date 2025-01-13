@@ -56,3 +56,60 @@ mod moka_cache {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::HrefStringResolver;
+
+    use super::*;
+    use usvg::Options;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn cacache() {
+        let resolver = ReqwestWithMiddlewareResolver::cacahe("./cacache".into());
+        let mut options = Options::default();
+        resolver.set_into_options(&mut options);
+
+        let mut s = mockito::Server::new_async().await;
+        s.mock("GET", "/gray.png")
+            .with_status(200)
+            .with_header("content-type", "image/png")
+            .with_body(include_bytes!("../../test_data/gray.png"))
+            .create();
+
+        let _tree = usvg::Tree::from_str(
+            &format!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                <image href="{}/gray.png" width="100" height="100"/>
+            </svg>"#,
+                s.url()
+            ),
+            &options,
+        )
+        .unwrap();
+
+        s.reset();
+
+        let tree = usvg::Tree::from_str(
+            &format!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+                <image href="{}/gray.png" width="100" height="100"/>
+            </svg>"#,
+                s.url()
+            ),
+            &options,
+        )
+        .unwrap();
+
+        let mut pixmap = resvg::tiny_skia::Pixmap::new(200, 200).unwrap();
+        resvg::render(
+            &tree,
+            resvg::tiny_skia::Transform::identity(),
+            &mut pixmap.as_mut(),
+        );
+        assert_eq!(
+            pixmap.pixel(0, 0).unwrap(),
+            resvg::tiny_skia::PremultipliedColorU8::from_rgba(127, 127, 127, 255).unwrap()
+        );
+    }
+}
