@@ -41,25 +41,27 @@ impl HrefStringResolver<'_> for ReqwestResolver {
         href.starts_with("https://") || href.starts_with("http://")
     }
     fn get_image_kind(&self, href: &str, options: &usvg::Options) -> Option<usvg::ImageKind> {
-        let (sender, receiver) = tokio::sync::oneshot::channel();
-
         let client = self.client.clone();
         let href = href.to_string();
-        tokio::spawn(async move {
-            let resp = client.get(&href).send().await.ok()?;
-            let content_type = resp
-                .headers()
-                .get(reqwest::header::CONTENT_TYPE)
-                .and_then(|v| v.to_str().ok());
-            let image_type = crate::utils::ImageKindTypes::get_image_type(content_type, &href)?;
-            let body = resp.bytes().await.ok()?.to_vec();
-            sender.send((image_type, body)).ok();
-            Some(())
-        });
-        tokio::task::block_in_place(|| {
-            let (img_type, body) = receiver.blocking_recv().ok()?;
-            return img_type.to_image_kind(body.into(), options);
-        })
+        // Check if we're already in a tokio runtime
+        let Ok(handle) = tokio::runtime::Handle::try_current() else {
+            return None;
+        };
+        // We're in an async context, use block_in_place
+        let (image_type, body) = tokio::task::block_in_place(|| {
+            handle.block_on(async {
+                let resp = client.get(&href).send().await.ok()?;
+                let content_type = resp
+                    .headers()
+                    .get(reqwest::header::CONTENT_TYPE)
+                    .and_then(|v| v.to_str().ok());
+                let image_type = crate::utils::ImageKindTypes::get_image_type(content_type, &href)?;
+                let body = resp.bytes().await.ok()?.to_vec();
+                Some((image_type, body))
+            })
+        })?;
+
+        image_type.to_image_kind(body.into(), options)
     }
 }
 
