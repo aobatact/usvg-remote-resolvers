@@ -2915,6 +2915,7 @@ dependencies = [
  "aws-sdk-s3",
  "http-cache-reqwest",
  "mockito",
+ "moka",
  "reqwest",
  "reqwest-middleware",
  "resvg",
