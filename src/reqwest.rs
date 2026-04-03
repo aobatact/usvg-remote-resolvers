@@ -2,10 +2,10 @@ use crate::HrefStringResolver;
 
 /// A resolver that uses reqwest to fetch images.
 ///
-/// This resolve can be used inside [`tokio`] rutime,
+/// This resolver can be used inside a [`tokio`] runtime,
 /// but it will block the current thread when resolving images.
-/// And it *panic* if it is used with current_thread runtime.
-#[derive(Debug, Clone)]
+/// And it *panics* if it is used with a current_thread runtime.
+#[derive(Debug, Default, Clone)]
 pub struct ReqwestResolver {
     client: reqwest::Client,
 }
@@ -22,14 +22,6 @@ impl ReqwestResolver {
     }
 }
 
-impl Default for ReqwestResolver {
-    fn default() -> Self {
-        Self {
-            client: reqwest::Client::new(),
-        }
-    }
-}
-
 impl From<reqwest::Client> for ReqwestResolver {
     fn from(client: reqwest::Client) -> Self {
         Self { client }
@@ -38,7 +30,7 @@ impl From<reqwest::Client> for ReqwestResolver {
 
 impl HrefStringResolver<'_> for ReqwestResolver {
     fn is_target(&self, href: &str) -> bool {
-        href.starts_with("https://") || href.starts_with("http://")
+        crate::utils::is_remote_url(href)
     }
     fn get_image_kind(&self, href: &str, options: &usvg::Options) -> Option<usvg::ImageKind> {
         let client = self.client.clone();
@@ -61,7 +53,7 @@ impl HrefStringResolver<'_> for ReqwestResolver {
             })
         })?;
 
-        image_type.to_image_kind(body.into(), options)
+        image_type.into_image_kind(body.into(), options)
     }
 }
 

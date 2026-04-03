@@ -102,13 +102,31 @@ impl<'a> HrefStringResolver<'a> for DefaultResolver {
     }
 }
 
+/// A resolver that tries the `primary` resolver first, and falls back to the `fallback` resolver
+/// if the primary does not handle the `href` or fails to resolve it.
+///
+/// This can be created using [`HrefStringResolver::with_fallback`] or [`From`] tuple conversions.
+///
+/// ```
+/// use usvg_remote_resolvers::{DefaultResolver, FallbackResolver};
+///
+/// // Using `with_fallback`
+/// use usvg_remote_resolvers::HrefStringResolver;
+/// let resolver = DefaultResolver.with_fallback(DefaultResolver);
+///
+/// // Using `From` tuple conversion
+/// let resolver: FallbackResolver<_, _> = (DefaultResolver, DefaultResolver).into();
+/// ```
 #[derive(Debug, Default, Clone, Copy)]
 pub struct FallbackResolver<T, U> {
+    /// The resolver that is tried first.
     pub primary: T,
+    /// The resolver that is used if the primary resolver does not handle the `href` or fails.
     pub fallback: U,
 }
 
 impl<T, U> FallbackResolver<T, U> {
+    /// Create a new `FallbackResolver` with the given `primary` and `fallback` resolvers.
     pub fn new(primary: T, fallback: U) -> Self {
         Self { primary, fallback }
     }
@@ -155,7 +173,7 @@ mod tests {
     use super::*;
     #[test]
     fn default_resolver() {
-        let resolver = DefaultResolver::default();
+        let resolver = DefaultResolver;
         let mut options = Options::default();
         resolver.set_into_options(&mut options);
 
