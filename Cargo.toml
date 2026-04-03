@@ -10,6 +10,7 @@ license = "MIT"
 keywords = ["svg"]
 
 [dependencies]
+aws-sdk-s3 = { version = "1", optional = true }
 http-cache-reqwest = { version = "0.16.0", default-features = false, optional = true }
 reqwest = { version = "0.12.9", default-features = false, optional = true }
 reqwest-middleware = { version = "0.4", optional = true }
@@ -28,3 +29,4 @@ reqwest_blocking = ["dep:reqwest", "reqwest/blocking"]
 reqwest_http_cache = ["dep:reqwest", "dep:tokio", "dep:reqwest-middleware", "dep:http-cache-reqwest"]
 reqwest_http_cache_manager_cacache = ["reqwest_http_cache", "http-cache-reqwest/manager-cacache"]
 reqwest_http_cache_manager_moka = ["reqwest_http_cache", "http-cache-reqwest/manager-moka"]
+s3 = ["dep:aws-sdk-s3", "dep:tokio"]

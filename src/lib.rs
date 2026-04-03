@@ -40,6 +40,8 @@ pub mod reqwest;
 pub mod reqwest_blocking;
 #[cfg(feature = "reqwest_http_cache")]
 pub mod reqwest_http_cache;
+#[cfg(feature = "s3")]
+pub mod s3;
 mod utils;
 
 /// HrefStringResolver is a trait that is used to resolve the `href` attribute of the `<image>` tag.
