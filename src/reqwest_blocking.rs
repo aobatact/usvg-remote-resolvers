@@ -31,7 +31,7 @@ impl From<reqwest::blocking::Client> for BlockingReqwestResolver {
 
 impl HrefStringResolver<'_> for BlockingReqwestResolver {
     fn is_target(&self, href: &str) -> bool {
-        href.starts_with("https://") || href.starts_with("http://")
+        crate::utils::is_remote_url(href)
     }
     fn get_image_kind(&self, href: &str, options: &usvg::Options) -> Option<usvg::ImageKind> {
         let resp = self.client.get(href).send().ok()?;
@@ -41,7 +41,7 @@ impl HrefStringResolver<'_> for BlockingReqwestResolver {
             .and_then(|v| v.to_str().ok());
         let image_type = ImageKindTypes::get_image_type(content_type, href)?;
         let body = resp.bytes().ok()?.to_vec();
-        image_type.to_image_kind(body.into(), options)
+        image_type.into_image_kind(body.into(), options)
     }
 }
 

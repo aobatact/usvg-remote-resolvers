@@ -1,5 +1,10 @@
 use std::sync::Arc;
 
+/// Check if the `href` is a remote URL (http or https).
+pub fn is_remote_url(href: &str) -> bool {
+    href.starts_with("https://") || href.starts_with("http://")
+}
+
 /// Represents the image format types supported by usvg.
 pub enum ImageKindTypes {
     /// JPEG image format.
@@ -42,7 +47,7 @@ impl ImageKindTypes {
     ///
     /// For SVG images, the data is parsed into a [`usvg::Tree`] using the given `options`.
     /// Returns `None` if the SVG parsing fails.
-    pub fn to_image_kind(
+    pub fn into_image_kind(
         self,
         vec: Arc<Vec<u8>>,
         options: &usvg::Options,

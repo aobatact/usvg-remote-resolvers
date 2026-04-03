@@ -173,7 +173,7 @@ mod tests {
     use super::*;
     #[test]
     fn default_resolver() {
-        let resolver = DefaultResolver::default();
+        let resolver = DefaultResolver;
         let mut options = Options::default();
         resolver.set_into_options(&mut options);
 
