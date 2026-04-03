@@ -38,6 +38,8 @@ use usvg::{ImageHrefStringResolverFn, ImageKind, Options};
 pub mod reqwest;
 #[cfg(feature = "reqwest_blocking")]
 pub mod reqwest_blocking;
+#[cfg(feature = "reqwest_http_cache")]
+pub mod reqwest_http_cache;
 mod utils;
 
 /// HrefStringResolver is a trait that is used to resolve the `href` attribute of the `<image>` tag.
