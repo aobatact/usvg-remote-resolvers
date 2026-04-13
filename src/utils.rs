@@ -1,5 +1,15 @@
 use std::sync::Arc;
 
+macro_rules! log_warn {
+    ($($arg:tt)*) => {
+        #[cfg(feature = "log")]
+        log::warn!($($arg)*);
+        #[cfg(not(feature = "log"))]
+        { let _ = format_args!($($arg)*); }
+    };
+}
+pub(crate) use log_warn;
+
 /// Check if the `href` is a remote URL (http or https).
 pub fn is_remote_url(href: &str) -> bool {
     href.starts_with("https://") || href.starts_with("http://")

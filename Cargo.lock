@@ -2914,6 +2914,7 @@ version = "0.2.0"
 dependencies = [
  "aws-sdk-s3",
  "http-cache-reqwest",
+ "log",
  "mockito",
  "moka",
  "reqwest",

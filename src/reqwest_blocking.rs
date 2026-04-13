@@ -34,13 +34,35 @@ impl HrefStringResolver<'_> for BlockingReqwestResolver {
         crate::utils::is_remote_url(href)
     }
     fn get_image_kind(&self, href: &str, options: &usvg::Options) -> Option<usvg::ImageKind> {
-        let resp = self.client.get(href).send().ok()?;
+        let resp = match self.client.get(href).send() {
+            Ok(resp) => resp,
+            Err(e) => {
+                crate::utils::log_warn!("failed to fetch '{}': {}", href, e);
+                return None;
+            }
+        };
         let content_type = resp
             .headers()
             .get(reqwest::header::CONTENT_TYPE)
             .and_then(|v| v.to_str().ok());
-        let image_type = ImageKindTypes::get_image_type(content_type, href)?;
-        let body = resp.bytes().ok()?.to_vec();
+        let image_type = match ImageKindTypes::get_image_type(content_type, href) {
+            Some(t) => t,
+            None => {
+                crate::utils::log_warn!(
+                    "unsupported image type for '{}' (content-type: {:?})",
+                    href,
+                    content_type
+                );
+                return None;
+            }
+        };
+        let body = match resp.bytes() {
+            Ok(b) => b.to_vec(),
+            Err(e) => {
+                crate::utils::log_warn!("failed to read response body for '{}': {}", href, e);
+                return None;
+            }
+        };
         image_type.into_image_kind(body.into(), options)
     }
 }
