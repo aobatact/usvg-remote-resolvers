@@ -16,6 +16,7 @@ moka = { version = "0.12", default-features = false, features = ["sync"], option
 reqwest = { version = "0.12.9", default-features = false, optional = true }
 reqwest-middleware = { version = "0.4", optional = true }
 tokio = { version = "1.43.1", default-features = false, optional = true, features = ["rt", "rt-multi-thread"] }
+log = { version = "0.4", optional = true }
 usvg = "0.47.0"
 
 [dev-dependencies]

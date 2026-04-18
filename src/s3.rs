@@ -156,13 +156,20 @@ impl<C: S3CacheStore> HrefStringResolver<'_> for CachedS3Resolver<C> {
         is_s3_url(href)
     }
     fn get_image_kind(&self, href: &str, options: &usvg::Options) -> Option<usvg::ImageKind> {
-        let (bucket, key) = parse_s3_url(href)?;
+        let Some((bucket, key)) = parse_s3_url(href) else {
+            crate::utils::log_warn!("invalid S3 URL: '{}'", href);
+            return None;
+        };
         let client = self.client.clone();
         let bucket = bucket.to_string();
         let key = key.to_string();
         let cached = self.cache.get(href);
 
         let Ok(handle) = tokio::runtime::Handle::try_current() else {
+            crate::utils::log_warn!(
+                "no tokio runtime found; cannot resolve '{}'",
+                href
+            );
             return None;
         };
 
@@ -177,12 +184,31 @@ impl<C: S3CacheStore> HrefStringResolver<'_> for CachedS3Resolver<C> {
                     Ok(resp) => {
                         let etag = resp.e_tag().unwrap_or_default().to_string();
                         let content_type = resp.content_type().map(|s| s.to_string());
-                        let image_type = crate::utils::ImageKindTypes::get_image_type(
+                        let image_type = match crate::utils::ImageKindTypes::get_image_type(
                             content_type.as_deref(),
                             &key,
-                        )?;
-                        let body: Arc<Vec<u8>> =
-                            Arc::new(resp.body.collect().await.ok()?.to_vec());
+                        ) {
+                            Some(t) => t,
+                            None => {
+                                crate::utils::log_warn!(
+                                    "unsupported image type for '{}' (content-type: {:?})",
+                                    href,
+                                    content_type
+                                );
+                                return None;
+                            }
+                        };
+                        let body: Arc<Vec<u8>> = match resp.body.collect().await {
+                            Ok(b) => Arc::new(b.to_vec()),
+                            Err(e) => {
+                                crate::utils::log_warn!(
+                                    "failed to read S3 response body for '{}': {}",
+                                    href,
+                                    e
+                                );
+                                return None;
+                            }
+                        };
 
                         if !etag.is_empty() {
                             self.cache.put(
@@ -199,8 +225,8 @@ impl<C: S3CacheStore> HrefStringResolver<'_> for CachedS3Resolver<C> {
                     }
                     Err(err) => {
                         // 304 Not Modified — use cached entry
-                        let raw = err.raw_response()?;
-                        if raw.status().as_u16() == 304 {
+                        let raw = err.raw_response();
+                        if raw.as_ref().is_some_and(|r| r.status().as_u16() == 304) {
                             let cached = cached?;
                             let image_type = crate::utils::ImageKindTypes::get_image_type(
                                 cached.content_type.as_deref(),
@@ -208,6 +234,11 @@ impl<C: S3CacheStore> HrefStringResolver<'_> for CachedS3Resolver<C> {
                             )?;
                             Some((image_type, cached.body))
                         } else {
+                            crate::utils::log_warn!(
+                                "S3 request failed for '{}': {}",
+                                href,
+                                err
+                            );
                             None
                         }
                     }

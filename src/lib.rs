@@ -59,8 +59,16 @@ pub trait HrefStringResolver<'a>: Send + Sync {
     {
         Box::new(move |href, options| {
             if self.is_target(href) {
-                self.get_image_kind(href, options)
+                let result = self.get_image_kind(href, options);
+                if result.is_none() {
+                    crate::utils::log_warn!("failed to resolve image href: '{}'", href);
+                }
+                result
             } else {
+                crate::utils::log_warn!(
+                    "image href '{}' is not a target for this resolver",
+                    href
+                );
                 None
             }
         })

@@ -37,18 +37,44 @@ impl HrefStringResolver<'_> for ReqwestResolver {
         let href = href.to_string();
         // Check if we're already in a tokio runtime
         let Ok(handle) = tokio::runtime::Handle::try_current() else {
+            crate::utils::log_warn!(
+                "no tokio runtime found; cannot resolve '{}'",
+                href
+            );
             return None;
         };
         // We're in an async context, use block_in_place
         let (image_type, body) = tokio::task::block_in_place(|| {
             handle.block_on(async {
-                let resp = client.get(&href).send().await.ok()?;
+                let resp = match client.get(&href).send().await {
+                    Ok(resp) => resp,
+                    Err(e) => {
+                        crate::utils::log_warn!("failed to fetch '{}': {}", href, e);
+                        return None;
+                    }
+                };
                 let content_type = resp
                     .headers()
                     .get(reqwest::header::CONTENT_TYPE)
                     .and_then(|v| v.to_str().ok());
-                let image_type = crate::utils::ImageKindTypes::get_image_type(content_type, &href)?;
-                let body = resp.bytes().await.ok()?.to_vec();
+                let image_type = match crate::utils::ImageKindTypes::get_image_type(content_type, &href) {
+                    Some(t) => t,
+                    None => {
+                        crate::utils::log_warn!(
+                            "unsupported image type for '{}' (content-type: {:?})",
+                            href,
+                            content_type
+                        );
+                        return None;
+                    }
+                };
+                let body = match resp.bytes().await {
+                    Ok(b) => b.to_vec(),
+                    Err(e) => {
+                        crate::utils::log_warn!("failed to read response body for '{}': {}", href, e);
+                        return None;
+                    }
+                };
                 Some((image_type, body))
             })
         })?;
